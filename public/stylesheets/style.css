@@ -26,3 +26,20 @@ body{
   padding-bottom:10px;
   color:#468847;
 }
+
+.cell{
+  display:table-cell;
+  text-align:center;
+  vertical-align:middle;
+}
+
+.cell-input{
+  background-color:transparent;
+  font-size:10pt;
+  border:none;
+  resize:none;
+  outline:none;
+  text-align:center;
+  width:100%;
+  height:75%;
+}

@@ -1,0 +1,230 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Sudoku Online</title>
+
+    <script src="javascripts/socket.io.js"></script>
+    <script src="javascripts/jquery-2.1.4.min.js"></script>
+    <script src="javascripts/jquery.touchy.min.js"></script>
+    <script src="javascripts/index.js"></script>
+    <script src="javascripts/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="stylesheets/style.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/bootstrap.min.css">
+    <link rel="shortcut icon" type="image/x-icon" href="https://dl.dropboxusercontent.com/u/18927314/favicon2.ico">
+    <style> html, body { height:90%; }</style>
+
+  </head>
+
+  <body>
+    <nav class="navbar navbar-default" style="margin-bottom:5px">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Clam Online</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <div id="login-view-nav">
+            <form class="navbar-form navbar-left" role="search">
+              <div class="form-group" id="user-auth">
+                <input type="text" class="form-control" action="" id="username" placeholder="Username">
+                <input type="password" class="form-control" action="" id="password" placeholder="Password">
+              </div>
+              <button type="submit" id="login-submit" style="outline: none" class="btn btn-primary">Play!</button>
+            </form>
+          </div>
+
+          <div id="lobby-view-nav">
+            <ul class="nav navbar-nav navbar-right">
+              <li><a class="unclickable" id="lobby-greeting"></a></li>
+              <li class="logout"><a class="clickable">Logout</a></li>
+            </ul>
+          </div>
+
+          <div id="wait-view-nav">
+            <ul class="nav navbar-nav navbar-right">
+              <li><a class="unclickable" id="wait-greeting"></a></li>
+              <li id="wait-back"><a class="clickable">Back to Lobby</a></li>
+              <li class="logout"><a class="clickable">Logout</a></li>
+            </ul>
+          </div>
+
+          <div id="game-view-nav">
+            <ul class="nav navbar-nav navbar-right">
+              <li><a class="unclickable" id="game-greeting"></a></li>
+              <li id="game-back"><a class="clickable">Back to Lobby</a></li>
+              <li class="logout"><a class="clickable">Logout</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /.container-fluid -->
+    </nav>
+
+
+    <section id="login-view">
+<!--       <h1> Welcome to Clam! </h1>
+      <h1 id="fast-forward"> Fast Forward </h1> -->
+      <div class="container">
+        <div class="message">
+          Welcome to Clam beta! Let us know if you find any bugs! -- dzd123 and hsteven
+        </div>
+      </div>
+      <div class="container">
+        <div class="hero-unit">
+          <form class="form-signin">
+            <h2 class="form-signin-heading">New to Clam?</h2>
+            <input type="username" id="new-username" class="form-control" placeholder="Username">
+            <input type="password" id="new-password" class="form-control" placeholder="Password">
+            <input type="password" id="new-confirm-password" class="form-control" placeholder="Confirm Password">
+            <button class="btn btn-lg btn-primary btn-block" style="outline:none" id="register" type="submit">Register</button>
+            <div class="alert alert-danger" style="padding:3px;padding-left:10px;display:none" id="register-error">
+            </div>
+          </form>
+          Clam Online is the free, online version of the popular card game Clam, wherein players fight for victory in the ultimate test of logic, dexterity, and self-worth. 
+        </div>
+      </div>
+    </section>
+
+    <section id="lobby-view">
+      <!-- <h1> Lobby </h1>
+      Active Games:
+      <table id="game-ids">
+
+      </table>
+
+      Open Games:
+      <table id="open-game-ids">
+
+      </table> -->
+      <!-- <button id='create-game'>Create Game</button> -->
+      <div class="container" style="width:70%">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">My Games</h3>
+          </div>
+          <div class="panel-body">
+            <div class="scroll-table">
+              <table class="table table-condensed table-hover">
+                <thead>
+                  <tr>
+                    <th>Game Id</th>
+                    <th>Host</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="my-games">
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Open Games</h3>
+          </div>
+          <div class="panel-body">
+            <div class="scroll-table">
+              <table class="table table-condensed table-hover">
+                <thead>
+                  <tr>
+                    <th>Game Id</th>
+                    <th>Host</th>
+                    <th>Joined?</th>
+                    <th>Open Spots</th>
+                  </tr>
+                </thead>
+                <tbody id="open-games">
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Active Games</h3>
+          </div>
+          <div class="panel-body">
+            <div class="scroll-table">
+              <table class="table table-condensed table-hover">
+                <thead>
+                  <tr>
+                    <th>Game Id</th>
+                    <th>Host</th>
+                    <th>Joined?</th>
+                  </tr>
+                </thead>
+                <tbody id="active-games">
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary btn-large" id="create-game" style="outline:none;margin-bottom:20px">Create Game</button>
+      </div>
+    </section>
+
+    <section id="wait-view">
+      <div class="container">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Waiting Room</h3>
+          </div>
+          <div class="panel-body">
+            <dl class="dl-horizontal" style="font-size:19px">
+              <dt>Game Id:</dt>
+              <dd id="game-id"></dd>
+              <dt>Host:</dt>
+              <dd id="host"></dd>
+            </dl>
+            <table class="table table-condensed table-hover">
+              <thead>
+                <tr>
+                  <th>Players</th>
+                </tr>
+              </thead>
+              <tbody id="players-list">
+
+              </tbody>
+            </table>
+            <button type="button" class="btn btn-primary btn-large" id="start-game">Start Game</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-view">
+      <div id="game-view-left">
+        <table id="game-layout">
+          <tr>
+            <td>
+            </td>
+            <td colspan="6" style="text-align:center;">
+              <span style="font-size:30px;font-weight:bold" id="status">It's your turn to pass!</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div id="game-view-right">
+        <div class="panel panel-default" style="margin-top:47px">
+          <div class="panel-heading">
+            <h3 class="panel-title">History</h3>
+          </div>
+          <div id="history-container">
+            <table class="table table-condensed table-hover table-striped" id="history" style="text-align:left">
+              <tbody id="history-text">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

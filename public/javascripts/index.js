@@ -6,16 +6,16 @@ setView = function(view) { // hide everything but view
   unhideView(myView);
 }
 
-var socket, pid;
-var userInfo;
+var socket;
+var playerInfo;
 var gameInfo;
 var defaultColors = {
-  0: 'black',
-  1: 'red',
-  2: 'blue',
-  3: 'green',
-  4: 'yellow',
+  0: 'red',
+  1: 'blue',
+  2: 'green',
+  3: 'yellow',
 }
+var myPid;
 
 var customColors = {};
 
@@ -37,6 +37,26 @@ function getColor(pid) {
 window.onload = function() {
   createGameView();
   socket = io();
+  socket.on('updatePlayers', updatePlayers);
+  socket.on('updateGame', updateGame);
+  socket.on('register', register);
+  socket.emit('refresh');
+
+  $('#register').click(function() {
+    var username = $('#username').val();
+    socket.emit('register', {username: username});
+    print('tried to register');
+    return false;
+  });
+}
+
+function updateColors() {
+  $('.cell-input').css({color: getColor(myPid)});
+}
+
+function register(pid) {
+  myPid = pid;
+  updateColors();
 }
 
 cellId = function(x, y) { return 'cell-' + x + '-' + y }
@@ -76,17 +96,32 @@ function createGameView() {
   }
 }
 
-function updatePlayers(_userInfo) {
-  userInfo = _userInfo;
+function updatePlayers(_playerInfo) {
+  playerInfo = _playerInfo;
+  print('received player update', playerInfo);
 
-  var table = $('');
+  makeColorSquare = function(color) {
+    var span = $('<span>').addClass('square');
+    var unitSize = '10px';
+    span.css({
+        display: 'block',
+        float: 'left',
+        width: unitSize,
+        height: unitSize,
+        'background-color': color
+    });
+    return span;
+  }
+
+  var table = $('#player-list');
   table.empty();
-  for (var player in _userInfo) {
+  for (var pid in playerInfo) {
+    var player = playerInfo[pid];
     var tr = $('<tr>');
     var td1 = $('<td>'), td2 = $('<td>'), td3 = $('<td>');
     // color, username, score
 
-    td1.append(makeColorSquare(getColor(player.pid)));
+    td1.append(makeColorSquare(getColor(pid)));
     td2.append(player.username);
     td3.append(player.score);
     tr.append(td1).append(td2).append(td3);
@@ -96,27 +131,50 @@ function updatePlayers(_userInfo) {
 }
 
 function updateGame(_gameInfo) {
-  gameInfo = _gameInfo;
+  print('received game update', _gameInfo);
+
   // gameObj: ar[9][9], ar[x][y] = {rank: , source: sourceObj}
   // sourceObj: 0 -> initially known, pid -> some pid
   for (var x = 0; x < 9; ++x) {
     for (var y = 0; y < 9; ++y) {
-      var cellInfo = gameObj[x][y];
-      var el = $('#' + cellId(x, y));
-      var pid = cellInfo.source;
-      if (pid != 0) {
-        el.css({color: userInfo[pid].color});
+      var cellInfo = _gameInfo[x][y];
+      var cell = $('#' + cellId(x, y));  
+      if (gameInfo != null) {
+        var old = gameInfo[x][y];
+        if (old.rank == cellInfo.rank && old.source == cellInfo.source) {
+          continue;
+        }
+        print('updating x=', x, 'y=', y, 'prev=', gameInfo[x][y], 'new=',cellInfo);
+        var el = $('span', cell).empty();
+        var pid = cellInfo.source;
+        if (pid != 0) {
+          el.css({color: getColor(pid)});
+        } else {
+          el.css({color: 'black'});
+        }
+        el.append(cellInfo.rank);
       } else {
-        el.css({color: 'black'});
-      }
-
-      if (rank != 0) {
-        el.html(rank);
-      } else {
-        el.html('');
+        cell.empty(); // should be already empty
+        if (cellInfo.rank != 0) {
+          var el = $('<span>');
+          var pid = cellInfo.source;
+          if (pid != 0) {
+            el.css({color: getColor(pid)});
+          } else {
+            el.css({color: 'black'});
+          }
+          el.append(cellInfo.rank);
+          cell.append(el);
+        } else {
+          var el = $('<input>').addClass('cell-input');
+          cell.append(el);
+        }
       }
     }
   }
+
+  gameInfo = _gameInfo;
+
 }
 
 function guess(guessObj) {

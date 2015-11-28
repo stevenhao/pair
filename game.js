@@ -5,11 +5,21 @@ function Game() {
   var public; // ar[9][9], ar[x][y] = {rank: , source: sourceObj}
 
   var init = function() {
+    public = [];
+    for(var row = 0; row < 9; ++row) {
+      var rowL = [];
+      for(var col = 0; col < 9; ++col) {
+        var unknown = {rank: 0, source: 0};
+        rowL.push(unknown);
+      }
+      public.push(rowL);
+    }
+
     private = [];
     for(var row = 0; row < 9; ++row) {
       var rowL = [];
       for(var col = 0; col < 9; ++col) {
-        rowL.push(0);
+        rowL.push(col);
       }
       private.push(rowL);
     }

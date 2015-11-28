@@ -14,9 +14,8 @@ app.get('/', function(req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-var server = http.createServer(app);
-io(server).on('connection', function(socket) {
-  print('connected!');
-});
+var httpServer = http.createServer(app);
 
-server.listen(app.get('port'));
+var server = require('./server')(); // server object
+server.attach(httpServer);
+httpServer.listen(app.get('port'));

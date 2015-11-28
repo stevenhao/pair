@@ -1,0 +1,28 @@
+body{
+  font:14px "Lucida Grande" sans-serif;
+}
+
+.cell{
+  width:50px;
+  height:50px;
+  margin:0px;
+}
+
+#game-view{
+  margin:0 auto;
+}
+
+.message{
+  max-width:95%;
+  margin:auto;
+  border-radius:5px;
+  margin-top:10px;
+  margin-bottom:10px;
+  background-color:#dff0d8;
+  border:1px solid;
+  border-color:#d6e9c6;
+  padding-left:10px;
+  padding-top:10px;
+  padding-bottom:10px;
+  color:#468847;
+}

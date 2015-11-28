@@ -1,16 +1,21 @@
+var engine = require('./engine');
 var print = console.log.bind(console);
+
 
 function Game() {
   var private;
   var public; // ar[9][9], ar[x][y] = {rank: , source: sourceObj}
 
-  var init = function() {
+  var init = function(difficulty) {
+    var gameObj = engine.makeGame(difficulty);
+    // gameObj = {publicNums, privateNums}
+    // publicNums[x][y] = 0 -> empty
     public = [];
     for(var row = 0; row < 9; ++row) {
       var rowL = [];
       for(var col = 0; col < 9; ++col) {
-        var unknown = {rank: 0, source: -1};
-        rowL.push(unknown);
+        var p = {rank: gameObj.public[row][col], source: -1};
+        rowL.push(p);
       }
       public.push(rowL);
     }
@@ -19,7 +24,7 @@ function Game() {
     for(var row = 0; row < 9; ++row) {
       var rowL = [];
       for(var col = 0; col < 9; ++col) {
-        rowL.push(col + 1);
+        rowL.push(gameObj.private[row][col]);
       }
       private.push(rowL);
     }
@@ -55,7 +60,7 @@ function Game() {
   }
 
   var self = {
-    init: function() { init(); return self; },
+    init: function() { init('easy'); return self; },
     guess: function(pid, guessObj) { return guess(pid, guessObj) },
 
     getPublic: function() { return public },

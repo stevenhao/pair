@@ -53,6 +53,10 @@ body{
   height:100%;
 }
 
-.me{
+.player-me{
   font-weight:bold;
+}
+
+.offline{
+  font-style:italic;
 }

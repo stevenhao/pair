@@ -1,5 +1,7 @@
 print = console.log.bind(console);
 
+hide = function(el) { el.css('display', 'none') }
+unhide = function(el) { el.css('display', 'inline-block') }
 setView = function(view) { // hide everything but view
   hideView(myView);
   myView = view;
@@ -43,12 +45,32 @@ window.onload = function() {
   socket.on('err', function(err) {
     print('error=', err);
   });
+  socket.on('logout', function() {
+    print('logout');
+    myPid = null;
+  });
+  socket.on('rename', function() {
+    // set name to username?
+  });
+
+
   socket.emit('refresh');
 
   $('#register').click(function() {
     var username = $('#username').val();
-    socket.emit('register', {username: username});
+    socket.emit('register', username);
     print('tried to register');
+    return false;
+  });
+  $('#rename').click(function() {
+    var username = $('#username').val();
+    socket.emit('rename', username);
+    print('tried to rename');
+    return false;
+  });
+  $('#logout').click(function() {
+    socket.emit('logout');
+    print('tried to logout');
     return false;
   });
 }
@@ -125,16 +147,33 @@ function updatePlayers(_playerInfo) {
     // color, username, score
 
     td1.append(makeColorSquare(getColor(pid)));
-    td2.append(player.username);
     td3.append(player.score);
+    td2.append(player.username);
     if (pid == myPid) {
+      td2.append(' (You)');
       td2.addClass('player-me');
       td3.addClass('player-me');
+    } else {
+    }
+
+    if (!player.online) {
+      td2.append(' (offline)')
+      td2.addClass('offline');
     }
     tr.append(td1).append(td2).append(td3);
     table.append(tr);
   }
   // updateObj: [{pid: ., username: ., score: .}]
+
+  if (myPid == null) {
+    hide($('#rename'));
+    hide($('#logout'));
+    unhide($('#register'));
+  } else {
+    hide($('#register'));
+    unhide($('#rename'));
+    unhide($('#logout'));    
+  }
 }
 
 function updateGame(_gameInfo) {

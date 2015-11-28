@@ -134,7 +134,7 @@ function updateGame(_gameInfo) {
   print('received game update', _gameInfo);
 
   // gameObj: ar[9][9], ar[x][y] = {rank: , source: sourceObj}
-  // sourceObj: 0 -> initially known, pid -> some pid
+  // sourceObj: -1 -> initially known, pid -> some pid
   for (var x = 0; x < 9; ++x) {
     for (var y = 0; y < 9; ++y) {
       var cellInfo = _gameInfo[x][y];
@@ -147,7 +147,7 @@ function updateGame(_gameInfo) {
         print('updating x=', x, 'y=', y, 'prev=', gameInfo[x][y], 'new=',cellInfo);
         var el = $('span', cell).empty();
         var pid = cellInfo.source;
-        if (pid != 0) {
+        if (pid != -1) {
           el.css({color: getColor(pid)});
         } else {
           el.css({color: 'black'});

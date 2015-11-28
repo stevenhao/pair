@@ -9,7 +9,7 @@ function Game() {
     for(var row = 0; row < 9; ++row) {
       var rowL = [];
       for(var col = 0; col < 9; ++col) {
-        var unknown = {rank: 0, source: 0};
+        var unknown = {rank: 0, source: -1};
         rowL.push(unknown);
       }
       public.push(rowL);

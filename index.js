@@ -14,6 +14,10 @@ app.get('/', function(req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+app.get('/generate', function(req, res) {
+  res.sendFile(__dirname + '/views/generate.html');
+});
+
 var httpServer = http.createServer(app);
 
 var server = require('./server')(); // server object

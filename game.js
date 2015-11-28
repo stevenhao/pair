@@ -19,17 +19,17 @@ function Game() {
     for(var row = 0; row < 9; ++row) {
       var rowL = [];
       for(var col = 0; col < 9; ++col) {
-        rowL.push(col);
+        rowL.push(col + 1);
       }
       private.push(rowL);
     }
   },
 
-  guess = function(guessObj) {
+  guess = function(pid, guessObj) {
     var sq = guessObj.square, guess = guessObj.guess;
     var r = sq.row, c = sq.col;
     validate = function() {
-      if (public[r][c] != 0) {
+      if (public[r][c].rank != 0) {
         return 'already showing';
       } else {
         return 'ok';
@@ -39,7 +39,8 @@ function Game() {
       if (private[r][c] != guess) {
         return 'incorrect';
       } else {
-        public[r][c] = private[r][c];
+        public[r][c].rank = private[r][c];
+        public[r][c].source = pid;
         return 'correct';
       }
     }
@@ -55,7 +56,7 @@ function Game() {
 
   var self = {
     init: function() { init(); return self; },
-    guess: function(guessObj) { return guess(guessObj) },
+    guess: function(pid, guessObj) { return guess(pid, guessObj) },
 
     getPublic: function() { return public },
   }

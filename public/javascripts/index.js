@@ -20,7 +20,7 @@ var myPid;
 var customColors = {};
 
 function randomColor() {
-  return 'gray'; // truly random number
+  return 'gray'; // trule random color generator
 }
 
 function getColor(pid) { 
@@ -40,6 +40,9 @@ window.onload = function() {
   socket.on('updatePlayers', updatePlayers);
   socket.on('updateGame', updateGame);
   socket.on('register', register);
+  socket.on('err', function(err) {
+    print('error=', err);
+  });
   socket.emit('refresh');
 
   $('#register').click(function() {
@@ -102,7 +105,7 @@ function updatePlayers(_playerInfo) {
 
   makeColorSquare = function(color) {
     var span = $('<span>').addClass('square');
-    var unitSize = '10px';
+    var unitSize = '20px';
     span.css({
         display: 'block',
         float: 'left',
@@ -124,6 +127,10 @@ function updatePlayers(_playerInfo) {
     td1.append(makeColorSquare(getColor(pid)));
     td2.append(player.username);
     td3.append(player.score);
+    if (pid == myPid) {
+      td2.addClass('player-me');
+      td3.addClass('player-me');
+    }
     tr.append(td1).append(td2).append(td3);
     table.append(tr);
   }
@@ -145,7 +152,9 @@ function updateGame(_gameInfo) {
           continue;
         }
         print('updating x=', x, 'y=', y, 'prev=', gameInfo[x][y], 'new=',cellInfo);
-        var el = $('span', cell).empty();
+        cell.empty(); // should be already empty
+
+        var el = $('<span>').addClass('cell-output');
         var pid = cellInfo.source;
         if (pid != -1) {
           el.css({color: getColor(pid)});
@@ -153,12 +162,13 @@ function updateGame(_gameInfo) {
           el.css({color: 'black'});
         }
         el.append(cellInfo.rank);
+        cell.append(el);
       } else {
         cell.empty(); // should be already empty
         if (cellInfo.rank != 0) {
-          var el = $('<span>');
+          var el = $('<span>').addClass('cell-output');
           var pid = cellInfo.source;
-          if (pid != 0) {
+          if (pid != -1) {
             el.css({color: getColor(pid)});
           } else {
             el.css({color: 'black'});
@@ -166,8 +176,20 @@ function updateGame(_gameInfo) {
           el.append(cellInfo.rank);
           cell.append(el);
         } else {
+          var form = $('<form>').addClass('cell-input').attr('x', x).attr('y', y);
+          form.submit(function() {
+            var el = $(this);
+            var guess = parseInt($('input', el).val());
+            print('submitting guess=', guess);
+            var guessObj = {
+              square: {row: el.attr('x'), col: el.attr('y')},
+              guess: guess,
+            };
+            doGuess(guessObj);
+            return false;
+          });
           var el = $('<input>').addClass('cell-input');
-          cell.append(el);
+          cell.append(form.append(el));
         }
       }
     }
@@ -177,7 +199,8 @@ function updateGame(_gameInfo) {
 
 }
 
-function guess(guessObj) {
+function doGuess(guessObj) {
   // guessObj: {square: {row: ., col: .}, guess};
+  // perhaps do some validation here
   socket.emit('guess', guessObj);
 }

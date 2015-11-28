@@ -3,29 +3,27 @@ var socketio = require('socket.io');
 var Game = require('./game');
 
 module.exports = function() {
-
   function Server() {
     var io, game, playerInfo;
 
     function Player() {
       var socket, pid = -1;
-      var init = function() {
-      },
 
-      attach = function(_socket) {
+      function attach(_socket) {
         socket = _socket;
         socket.on('refresh', refresh);
         socket.on('register', register);
-      },
+        socket.on('guess', guess);
+      }
 
-      refresh = function() {
+      function refresh() {
         print('refreshing', {playerInfo: playerInfo});
 
         socket.emit('updatePlayers', playerInfo);
         socket.emit('updateGame', game.getPublic());
-      },
+      }
 
-      register = function(userInfo) {
+      function register(userInfo) {
         var username = userInfo.username;
         if (pid == -1) {
           pid = playerInfo.length;
@@ -38,30 +36,52 @@ module.exports = function() {
         }
         socket.emit('register', pid);
         updateAll();
-      },
+      }
+
+      function guess(guessObj) {
+        if (pid == -1) {
+          // probably shouldn't be guessing?
+          socket.emit('err', {
+            action: 'guess',
+            reason: 'not registered',
+          });
+          return;
+        }
+
+        var result = game.guess(pid, guessObj);
+        print('guessed', guessObj, 'result=',result);
+        if ('error' in result) {
+        } else {
+          if (result.result == 'correct') {
+            playerInfo[pid].score += 1;
+          } else {
+            playerInfo[pid].score -= 10;
+          }
+        }
+        updateAll();
+      }
 
       self = {
-        init: function() { init() },
         attach: function(socket) { attach(socket) },
       }
       return self;
     }
 
-    var init = function() {
+    function init() {
       game = Game();
       game.init();
       playerInfo = [];
-    },
+    }
     
-    attach = function(app) {
+    function attach(app) {
       io = socketio(app);
       io.on('connection', function(socket) {
         var player = Player();
         player.attach(socket);
       });
-    },
+    }
 
-    updateAll = function() {
+    var updateAll = function() {
       print('updating all', {playerInfo: playerInfo});
       io.emit('updatePlayers', playerInfo);
       io.emit('updateGame', game.getPublic());

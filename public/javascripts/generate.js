@@ -212,28 +212,6 @@ function changeDifficulty() {
   step();
 }
 
-window.onload = function() {
-  createGameView();
-  $('#generate').click(function() {
-    generateSolvedGame()
-    updateGameView();
-    return false;
-  });
-
-  $("#slider").slider({
-    range: "min",
-    value: 81,
-    min: 20,
-    max: 81,
-    slide: function(ev, ui) {
-      $( "#slider-amount" ).html(ui.value);
-      sliderValue = ui.value;
-      changeDifficulty();
-    }
-  });
-  $( "#slider-amount" ).html($('#slider').slider('value'));
-}
-
 cellId = function(x, y) { return 'cell-' + x + '-' + y }
 
 function createGameView() {
@@ -288,4 +266,42 @@ function updateGameView() {
     }
   }
   $('#difficulty').html(difficulty);
+}
+
+function savePuzzle() {
+  // gameObj = {public: public, private: private}
+  // public[x][y] = 0 -> empty
+  var gameObj = {public: public, private: private};
+  $.ajax({
+    url: '/sudoku',
+    type: 'POST',
+    data: gameObj,
+    success: function(res) { print('POST completed', res); }
+  });
+}
+
+window.onload = function() {
+  createGameView();
+  $('#generate').click(function() {
+    generateSolvedGame()
+    updateGameView();
+    return false;
+  });
+
+  $('#save-puzzle').click(function() {
+    savePuzzle();
+  });
+
+  $("#slider").slider({
+    range: "min",
+    value: 81,
+    min: 20,
+    max: 81,
+    slide: function(ev, ui) {
+      $( "#slider-amount" ).html(ui.value);
+      sliderValue = ui.value;
+      changeDifficulty();
+    }
+  });
+  $( "#slider-amount" ).html($('#slider').slider('value'));
 }

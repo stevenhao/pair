@@ -5,15 +5,31 @@ function Game() {
   var private;
   var public; // ar[9][9], ar[x][y] = {rank: , source: sourceObj}
 
-  var init = function(difficulty) {
-    var gameObj = engine.makeGame(difficulty);
-    // gameObj = {publicNums, privateNums}
-    // publicNums[x][y] = 0 -> empty
+  var init = function(gameObj) {
+    if (gameObj == null) {
+      gameObj = engine.makeGame();
+    } else {
+      for (var x = 0; x < 9; ++x) {
+        for (var y = 0; y < 9; ++y) {
+          gameObj.public[x][y] = parseInt(gameObj.public[x][y]);
+          gameObj.private[x][y] = parseInt(gameObj.private[x][y]);
+        }
+      }
+    }
+    print('init game, gameObj=', gameObj);
+    // gameObj = {public: public, private: private}
+    // public[x][y] = 0 -> empty
     public = [];
     for(var row = 0; row < 9; ++row) {
       var rowL = [];
       for(var col = 0; col < 9; ++col) {
-        var p = {rank: gameObj.public[row][col], source: -1};
+        var p;
+        var pub = gameObj.public[row][col];
+        if (pub == 1) {
+          p = {rank: gameObj.private[row][col], source: -1};
+        } else {
+          p = {rank: 0, source: -1};
+        }
         rowL.push(p);
       }
       public.push(rowL);
@@ -59,7 +75,7 @@ function Game() {
   }
 
   var self = {
-    init: function() { init('easy'); return self; },
+    init: function(gameObj) { init(gameObj); return self; },
     guess: function(pid, guessObj) { return guess(pid, guessObj) },
 
     getPublic: function() { return public },

@@ -121,14 +121,20 @@ function Server() {
     });
   }
 
-  var updateAll = function() {
+  function updateAll() {
     print('updating all', {playerInfo: playerInfo});
     io.emit('updatePlayers', playerInfo);
     io.emit('updateGame', game.getPublic());
   }
 
+  function createGame(gameObj) {
+    game = Game().init(gameObj);
+    return 'lol';
+  }
+
   self = {
     attach: function(app) { attach(app) },
+    createGame: function(gameObj) { return createGame(gameObj) },
   }
   return self;
 }

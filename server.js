@@ -30,31 +30,41 @@ function GameServer() {
     }
 
     function register(username) {
-      if (pid == -1) {
-        pid = 0;
-        while (pid < playerInfo.length) {
-          if (playerInfo[pid].username == username) {
-            if (playerInfo[pid].online > 0) {
-              // TODO: handle teams??
-              pid = -1;
-              socket.emit('err', {action: 'register', reason: 'username taken'});
-              return;
-            }
-            print('attached to', username);
-            playerInfo[pid].online += 1;
-            break;
-          } else {
-            ++pid;
+      function validate() {
+        if (pid != -1) {
+          return 'already registered';
+        }
+        if (username.length == 0) {
+          return 'username is empty';
+        }
+        for(var userInfo of playerInfo) {
+          if (userInfo.username == username && userInfo.online > 0) {
+            return 'username taken and logged in';
           }
         }
+        return 'ok';
+      }
+      var valid = validate();
+      if (valid != 'ok') {
+        socket.emit('err', {action: 'register', reason: valid});
+        return;
+      }
 
-        if (pid == playerInfo.length) {
-          var userInfo = {username: username, score: 0, online: 1}
-          playerInfo.push(userInfo);
-          print('registered', username, 'to pid=', pid, userInfo);
+      pid = 0;
+      while (pid < playerInfo.length) {
+        if (playerInfo[pid].username == username) {
+          print('attached to', username);
+          playerInfo[pid].online += 1;
+          break;
+        } else {
+          ++pid;
         }
-      } else {
-        socket.emit('err', {action: 'register', reason: 'already registeerd'});
+      }
+
+      if (pid == playerInfo.length) {
+        var userInfo = {username: username, score: 0, online: 1}
+        playerInfo.push(userInfo);
+        print('registered', username, 'to pid=', pid, userInfo);
       }
       socket.emit('register', pid);
       updateAll();
@@ -80,15 +90,24 @@ function GameServer() {
     }
 
     function rename(username) {
-      if (pid == -1) {
-        socket.emit('err', {action: 'rename', reason: 'not registered'});
-        return;
-      }
-      for(var userInfo of playerInfo) {
-        if (userInfo.username == username) {
-          socket.emit('err', {action: 'rename', reason: 'username taken'});
-          return;
+      function validate() {
+        if (pid == -1) {
+          return 'not registered';
         }
+        if (username.length == 0) {
+          return 'username is empty';
+        }
+        for(var userInfo of playerInfo) {
+          if (userInfo.username == username) {
+            return 'username taken';
+          }
+        }
+        return 'ok';
+      }
+      var valid = validate();
+      if (valid != 'ok') {
+        socket.emit('err', {action: 'rename', reason: valid});
+        return;
       }
       playerInfo[pid].username = username;
       print('updated:', {pid: pid, username: username});

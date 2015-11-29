@@ -57,14 +57,34 @@ window.onload = function() {
     socket.emit('refresh');
   });
 
+  $('#username').submit(function() {
+    print('username enter');
+    return false;
+  });
+
   $('#register').click(function() {
+    if ($('#register').hasClass('hidden')) {
+      $('#rename').click();
+      return false;
+    }
     var username = $('#username').val();
+    username = $.trim(username);
+    if (username.length == 0) {
+      print('name is empty');
+      return false;
+    }
+
     socket.emit('register', username);
     print('tried to register');
     return false;
   });
   $('#rename').click(function() {
     var username = $('#username').val();
+    username = $.trim(username);
+    if (username.length == 0) {
+      print('name is empty');
+      return false;
+    }
     socket.emit('rename', username);
     print('tried to rename');
     return false;
@@ -183,6 +203,7 @@ function updateGame(_gameInfo) {
   // gameObj: ar[9][9], ar[x][y] = {rank: , source: sourceObj}
   // sourceObj: -1 -> initially known, pid -> some pid
   var completed = 0;
+  var giveNextFocus = false;
   for (var x = 0; x < 9; ++x) {
     for (var y = 0; y < 9; ++y) {
       var cellInfo = _gameInfo[x][y];
@@ -192,11 +213,24 @@ function updateGame(_gameInfo) {
       var cell = $('#' + cellId(x, y));  
       if (gameInfo != null) {
         var old = gameInfo[x][y];
-        if (old.rank == cellInfo.rank && old.source == cellInfo.source) {
+        if (cellInfo.rank == 0) {
+          if (giveNextFocus) {
+            print('giving focus to', {x:x, y:y});
+            $('.cell-input', cell).focus();
+            giveNextFocus = false;
+          }
+          continue;
+        } else if (old.rank == cellInfo.rank && old.source == cellInfo.source) {
           continue;
         }
+        var prv = $('.cell-input', cell);
+        print('prv =', prv);
+        if (prv != null && prv.is(":focus")) {
+          // give next input focus.
+          giveNextFocus = true;
+        }
         print('updating x=', x, 'y=', y, 'prev=', gameInfo[x][y], 'new=',cellInfo);
-        cell.empty(); // should be already empty
+        cell.empty();
 
         var el = $('<span>').addClass('cell-output');
         var pid = cellInfo.source;
@@ -241,6 +275,9 @@ function updateGame(_gameInfo) {
 
   if (completed == 81) {
     unhide($('#new-game'));
+    if (giveNextFocus) {
+      $('#username').focus();
+    }
   } else {
     hide($('#new-game'));
   }

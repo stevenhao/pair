@@ -3,7 +3,7 @@ var socketio = require('socket.io');
 var Game = require('./game');
 
 function Server() {
-  var io, game = Game().init(), playerInfo = [];
+  var game = Game().init(), playerInfo = [], clients = [];
 
   function Client() {
     var socket, pid = -1;
@@ -30,8 +30,9 @@ function Server() {
         pid = 0;
         while (pid < playerInfo.length) {
           if (playerInfo[pid].username == username) {
-            if (playerInfo[pid].online) {
+            if (playerInfo[pid].online > 0) {
               // TODO: handle teams??
+              pid = -1;
               socket.emit('err', {action: 'register', reason: 'username taken'});
               return;
             }
@@ -79,6 +80,12 @@ function Server() {
         socket.emit('err', {action: 'rename', reason: 'not registered'});
         return;
       }
+      for(var userInfo of playerInfo) {
+        if (userInfo.username == username) {
+          socket.emit('err', {action: 'rename', reason: 'username taken'});
+          return;
+        }
+      }
       playerInfo[pid].username = username;
       print('updated:', {pid: pid, username: username});
       updateAll();
@@ -107,8 +114,14 @@ function Server() {
       updateAll();
     }
 
+    function update() {
+      socket.emit('updatePlayers', playerInfo);
+      socket.emit('updateGame', game.getPublic());
+    }
+
     var self = {
       attach: function(socket) { attach(socket) },
+      update: function() { update() },
     }
     return self;
   }
@@ -118,13 +131,15 @@ function Server() {
     io.on('connection', function(socket) {
       var client = Client();
       client.attach(socket);
+      clients.push(client);
     });
   }
 
   function updateAll() {
     print('updating all', {playerInfo: playerInfo});
-    io.emit('updatePlayers', playerInfo);
-    io.emit('updateGame', game.getPublic());
+    for(var client of clients) {
+      client.update();
+    }
   }
 
   function createGame(gameObj) {

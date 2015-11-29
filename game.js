@@ -53,8 +53,8 @@ function Game() {
         return 'already showing';
       }
       var g = parseInt(guess);
-      if (isNaN(g) || guess.length != 1 || g < 1 || g > 9) {
-        return 'invalid guess ' + guess;
+      if (isNaN(g) || g < 1 || g > 9) {
+        return 'invalid guess ' + guess + ' = ' + g + ', len = ' + guess.length;
       }
       return 'ok';
     }

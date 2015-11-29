@@ -18,24 +18,79 @@ function fillGrid(rows, cols, val) {
   return ret;
 }
 
+function rnd(n) {
+  return Math.floor(n * Math.random());
+}
+
+var sqs = fillGrid(9, 9, 0);
+var sq = 0;
+for(var x = 0; x < 9; ++x) {
+  for(var y = 0; y < 9; ++y) {
+    sqs[x][y] = Math.floor(x / 3) * 3 + Math.floor(y / 3);
+  }
+}
+
+function makeToTry() {
+  to_try = [];
+  for (var x = 0; x < 9; ++x) {
+    for(var y = 0; y < 9; ++y) {
+      to_try.push({});
+      var k = rnd(to_try.length);
+      to_try[to_try.length - 1] = to_try[k];
+      to_try[k] = {x:x, y:y};
+    }
+  }
+}
+
 function generateSolvedGame() {
-  private = [[4, 3, 5, 7, 6, 8, 9, 1, 2],
-             [2, 7, 6, 9, 1, 5, 3, 4, 8],
-             [8, 9, 1, 4, 3, 2, 5, 6, 7],
-             [6, 2, 4, 5, 8, 3, 7, 9, 1],
-             [9, 5, 8, 6, 7, 1, 4, 2, 3],
-             [3, 1, 7, 2, 9, 4, 8, 5, 6],
-             [5, 4, 3, 8, 2, 6, 1, 7, 9],
-             [1, 6, 9, 3, 5, 7, 2, 8, 4],
-             [7, 8, 2, 1, 4, 9, 6, 3, 5]];
+  var rows = fillGrid(9, 10, 0), cols = fillGrid(9, 10, 0), squares = fillGrid(9, 10, 0);
+  function put(x, y, val) {
+    if (rows[x][val] || cols[y][val] || squares[sqs[x][y]][val]) {
+      return false;
+    }
+    rows[x][val] = cols[y][val] = squares[sqs[x][y]][val] = 1;
+    return true;
+  }
+
+  function unput(x, y, val) {
+    var sq = Math.floor(x / 3) * 3 + Math.floor(y / 3);
+    rows[x][val] = cols[y][val] = squares[sqs[x][y]][val] = 0;
+  }
+
+  function dfs(x, y) { // returns # sols
+    if (x == 9) return 1;
+    var nx = x, ny = y + 1;
+    if (ny == 9) {
+      ny = 0;
+      ++nx;
+    }
+
+    for(var tries = 0; tries < 10; ++tries) {
+      var val = rnd(9) + 1;
+      if (put(x, y, val)) {
+        private[x][y] = val;
+        if (dfs(nx, ny)) {
+          return 1;
+        }
+        unput(x, y, val);
+      }
+    }
+    return 0;
+  }
+
+  private = fillGrid(9, 9, 0);
+  for(var i = 0; i < 10; ++i) {
+    if (dfs(0, 0)) {
+      print('successfully generated grid:', private);
+      break;
+    }
+  }
+
   public = fillGrid(9, 9, 1);
+  makeToTry();
 }
 
 function hideOne() {
-  function rnd() {
-    return Math.floor(9 * Math.random());
-  }
-
   function countSolutions(public, x, y) {
     if (x == null) x = 0;
     if (y == null) y = 0;
@@ -44,19 +99,18 @@ function hideOne() {
   function uniqueSolution() {
     var rows = fillGrid(9, 10, 0), cols = fillGrid(9, 10, 0), squares = fillGrid(9, 10, 0);
     function put(x, y, val) {
-      var sq = Math.floor(x / 3) * 3 + Math.floor(y / 3);
-      if (rows[x][val] || cols[y][val] || squares[sq][val]) {
+      if (rows[x][val] || cols[y][val] || squares[sqs[x][y]][val]) {
         return false;
       }
-      rows[x][val] = cols[y][val] = squares[sq][val] = 1;
+      rows[x][val] = cols[y][val] = squares[sqs[x][y]][val] = 1;
       return true;
     }
 
     function unput(x, y, val) {
-      var sq = Math.floor(x / 3) * 3 + Math.floor(y / 3);
-      rows[x][val] = cols[y][val] = squares[sq][val] = 0;
+      rows[x][val] = cols[y][val] = squares[sqs[x][y]][val] = 0;
     }
 
+    var cnt = 0;
     function dfs(x, y) { // returns # sols
       var nx = x, ny = y + 1;
       if (ny == 9) {
@@ -64,34 +118,38 @@ function hideOne() {
         ++nx;
       }
       if (nx == 9) {
-        return 1;
+        ++cnt;
+        return;
+      }
+      if (public[x][y]) {
+        return dfs(nx, ny);
       }
 
-      var cnt = 0;
       for (var val = 1; val <= 9; ++val) {
-        if (public[x][y] && (val != private[x][y])) {
-          continue;
-        }
         if (put(x, y, val)) {
-          cnt += dfs(nx, ny);
+          dfs(nx, ny);
           unput(x, y, val);
-          if (cnt >= 2) break;
         }
       }
-      return cnt;
-      
     }
-    var numsols = dfs(0, 0);
-    print('numsols=', numsols);
-    return numsols == 1;
+    
+    for(var x = 0; x < 9; ++x) {
+      for(var y = 0; y < 9; ++y) {
+        if (public[x][y]) {
+          put(x, y, private[x][y]);
+        }
+      }
+    }
+    dfs(0, 0);
+    print('numsols=', cnt);
+    return cnt == 1;
   }
 
-  var num_its = 300;
-  for(var it = 0; it < num_its; ++it) {
-    var x = rnd(), y = rnd();
-    if (!(public[x][y])) continue;
-    public[x][y] = 0;
+  for(var it = 0; it < 3 && to_try.length > 0; ++it) {    
+    var obj = to_try.pop();
+    var x = obj.x, y = obj.y;
     print('hiding (', x, ',', y, ')');
+    public[x][y] = 0;
     if (uniqueSolution()) {
       print('ok');
       return true;
@@ -103,6 +161,19 @@ function hideOne() {
   return false;
 }
 
+function unhideOne() {
+  var x = rnd(9), y = rnd(9);
+  for(var it = 0; it < 300; ++it) {
+    if (public[x][y]) {
+      x = rnd(9);
+      y = rnd(9);
+    } else {
+      break;
+    }
+  }
+  public[x][y] = 1;
+}
+
 window.onload = function() {
   createGameView();
   $('#generate').click(function() {
@@ -112,14 +183,22 @@ window.onload = function() {
   });
 
   $('#hide-one').click(function() {
-    $(this).attr('disabled', 'disabled');
     try {
       hideOne();
     } catch(e) {
       print('error=', e);
     }
     updateGameView();
-    $(this).removeAttr('disabled');
+    return false;
+  });
+
+  $('#unhide-one').click(function() {
+    try {
+      unhideOne();
+    } catch(e) {
+      print('error=', e);
+    }
+    updateGameView();
     return false;
   });
 }

@@ -1,7 +1,6 @@
 var engine = require('./engine');
 var print = console.log.bind(console);
 
-
 function Game() {
   var private;
   var public; // ar[9][9], ar[x][y] = {rank: , source: sourceObj}

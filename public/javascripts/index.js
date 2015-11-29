@@ -18,6 +18,7 @@ var defaultColors = {
   3: 'yellow',
 }
 var myPid;
+var myGid;
 
 var customColors = {};
 
@@ -37,6 +38,8 @@ function getColor(pid) {
 }
 
 window.onload = function() {
+  myGid = $.url().param('gid');
+  print('myGid=', myGid);
   createGameView();
   socket = io();
   socket.on('updatePlayers', updatePlayers);
@@ -235,7 +238,6 @@ function updateGame(_gameInfo) {
   }
 
   gameInfo = _gameInfo;
-
 }
 
 function doGuess(guessObj) {

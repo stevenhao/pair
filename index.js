@@ -18,6 +18,11 @@ app.get('/generate', function(req, res) {
   res.sendFile(__dirname + '/views/generate.html');
 });
 
+app.get('/game', function(req, res) {
+  print('req=', req);
+  res.sendFile(__dirname + '/views/index.html');
+});
+
 var httpServer = http.createServer(app);
 
 var server = require('./server')(); // server object

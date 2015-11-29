@@ -51,9 +51,12 @@ function Game() {
     validate = function() {
       if (public[r][c].rank != 0) {
         return 'already showing';
-      } else {
-        return 'ok';
       }
+      var g = parseInt(guess);
+      if (isNaN(g) || guess.length != 1 || g < 1 || g > 9) {
+        return 'invalid guess ' + guess;
+      }
+      return 'ok';
     }
     action = function() {
       if (private[r][c] != guess) {

@@ -127,6 +127,7 @@ function GameServer() {
       var result = game.guess(pid, guessObj);
       print('guessed', guessObj, 'result=',result);
       if ('error' in result) {
+        socket.emit('err', {action: 'guess', reason: result.error});
       } else {
         if (result.result == 'correct') {
           playerInfo[pid].score += 1;

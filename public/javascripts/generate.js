@@ -1,8 +1,5 @@
 print = console.log.bind(console);
 
-hide = function(el) { el.css('display', 'none') }
-unhide = function(el) { el.css('display', 'inline-block') }
-
 var private;
 var public;
 
@@ -183,7 +180,7 @@ function unhideOne() {
 }
 
 var difficulty = null;
-var sliderValue = 81;
+var sliderValue = 35;
 var running = false;
 
 function changeDifficulty() {
@@ -287,7 +284,8 @@ function savePuzzle() {
 window.onload = function() {
   createGameView();
   $('#generate').click(function() {
-    generateSolvedGame()
+    generateSolvedGame();
+    changeDifficulty();
     updateGameView();
     return false;
   });
@@ -298,7 +296,7 @@ window.onload = function() {
 
   $("#slider").slider({
     range: "min",
-    value: 81,
+    value: sliderValue,
     min: 20,
     max: 81,
     slide: function(ev, ui) {
@@ -308,4 +306,6 @@ window.onload = function() {
     }
   });
   $( "#slider-amount" ).html($('#slider').slider('value'));
+  generateSolvedGame();
+  changeDifficulty();
 }

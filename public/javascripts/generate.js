@@ -276,7 +276,11 @@ function savePuzzle() {
     url: '/sudoku',
     type: 'POST',
     data: gameObj,
-    success: function(res) { print('POST completed', res); }
+    success: function(res) { 
+      print('POST completed', res); 
+      var url = 'pair.stevenhao.com/sudoku?gid='+res.gid;
+      $('#game-url').val(url);
+    }
   });
 }
 

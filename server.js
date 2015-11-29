@@ -153,12 +153,17 @@ function GameServer() {
 
 function Server() {
   var gameServers = {};
+  var lastGid = null; // most recent game created
 
   function attach(app) {
     io = socketio(app);
     io.on('connection', function(socket) {
       socket.on('conn', function(gid) {
-        if (gid in gameServers) {
+        if (gid == null || !(gid in gameServers)) {
+          gid = lastGid;
+        }
+
+        if (gid != null) {
           gameServers[gid].add(socket);
           socket.emit('conn');
         } else {
@@ -175,6 +180,7 @@ function Server() {
     }
     var gameServer = GameServer().init(gameObj);
     gameServers[gid] = gameServer;
+    lastGid = gid;
     return gid;
   }
 

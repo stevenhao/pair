@@ -2,8 +2,12 @@ var print = console.log.bind(console);
 var socketio = require('socket.io');
 var Game = require('./game');
 
-function Server() {
-  var game = Game().init(), playerInfo = [], clients = [];
+function randomGid() {
+  return '' + Math.floor(Math.random() * 10000);
+}
+
+function GameServer() {
+  var game = Game(), playerInfo = [], clients = [];
 
   function Client() {
     var socket, pid = -1;
@@ -126,15 +130,6 @@ function Server() {
     return self;
   }
 
-  function attach(app) {
-    io = socketio(app);
-    io.on('connection', function(socket) {
-      var client = Client();
-      client.attach(socket);
-      clients.push(client);
-    });
-  }
-
   function updateAll() {
     print('updating all', {playerInfo: playerInfo});
     for(var client of clients) {
@@ -142,12 +137,48 @@ function Server() {
     }
   }
 
-  function createGame(gameObj) {
-    game = Game().init(gameObj);
-    return 'lol';
+  function add(socket) {
+    print('adding socket');
+    var client = Client();
+    client.attach(socket);
+    clients.push(client);
   }
 
   self = {
+    add: function(socket) { add(socket); },
+    init: function(gameObj) { game.init(gameObj); return self; },
+  }
+  return self;
+}
+
+function Server() {
+  var gameServers = {};
+
+  function attach(app) {
+    io = socketio(app);
+    io.on('connection', function(socket) {
+      socket.on('conn', function(gid) {
+        if (gid in gameServers) {
+          gameServers[gid].add(socket);
+          socket.emit('conn');
+        } else {
+          socket.emit('err', {action: 'conn', reason: 'gid does not exist'});
+        }
+      });
+    });
+  }
+
+  function createGame(gameObj) {
+    var gid = randomGid();
+    while (gid in gameServers) {
+      gid = randomGid();
+    }
+    var gameServer = GameServer().init(gameObj);
+    gameServers[gid] = gameServer;
+    return gid;
+  }
+
+  var self = {
     attach: function(app) { attach(app) },
     createGame: function(gameObj) { return createGame(gameObj) },
   }

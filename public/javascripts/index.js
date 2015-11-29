@@ -42,6 +42,7 @@ window.onload = function() {
   print('myGid=', myGid);
   createGameView();
   socket = io();
+  socket.emit('conn', myGid);
   socket.on('updatePlayers', updatePlayers);
   socket.on('updateGame', updateGame);
   socket.on('register', register);
@@ -56,8 +57,10 @@ window.onload = function() {
     // set name to username?
   });
 
-
-  socket.emit('refresh');
+  socket.on('conn', function() {
+    print('connected!');
+    socket.emit('refresh');
+  });
 
   $('#register').click(function() {
     var username = $('#username').val();

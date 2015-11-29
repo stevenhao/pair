@@ -112,7 +112,7 @@ function GameServer() {
         if (result.result == 'correct') {
           playerInfo[pid].score += 1;
         } else {
-          playerInfo[pid].score -= 10;
+          playerInfo[pid].score -= 3;
         }
       }
       updateAll();

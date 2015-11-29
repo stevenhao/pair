@@ -36,6 +36,8 @@ body{
 .cell-input{
   background-color:transparent;
   font-size:10pt;
+  font-style:italic;
+  color:#E5E4E2;
   border:none;
   resize:none;
   outline:none;

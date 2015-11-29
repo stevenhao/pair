@@ -88,6 +88,7 @@ function generateSolvedGame() {
 
   public = fillGrid(9, 9, 1);
   makeToTry();
+  difficulty = 81;
 }
 
 function hideOne() {
@@ -132,7 +133,7 @@ function hideOne() {
         }
       }
     }
-    
+
     for(var x = 0; x < 9; ++x) {
       for(var y = 0; y < 9; ++y) {
         if (public[x][y]) {
@@ -145,10 +146,11 @@ function hideOne() {
     return cnt == 1;
   }
 
-  for(var it = 0; it < 3 && to_try.length > 0; ++it) {    
+  for(var it = 0; to_try.length > 0; ++it) {    
     var obj = to_try.pop();
     var x = obj.x, y = obj.y;
     print('hiding (', x, ',', y, ')');
+    if (public[x][y] == 0) continue;
     public[x][y] = 0;
     if (uniqueSolution()) {
       print('ok');
@@ -162,8 +164,9 @@ function hideOne() {
 }
 
 function unhideOne() {
+  makeToTry();
   var x = rnd(9), y = rnd(9);
-  for(var it = 0; it < 300; ++it) {
+  for(var it = 0; it < 3000; ++it) {
     if (public[x][y]) {
       x = rnd(9);
       y = rnd(9);
@@ -171,7 +174,42 @@ function unhideOne() {
       break;
     }
   }
-  public[x][y] = 1;
+  if (public[x][y]) {
+    return false; // everything's showing.
+  } else {
+    public[x][y] = 1;
+    return true;
+  }
+}
+
+var difficulty = null;
+var sliderValue = 81;
+var running = false;
+
+function changeDifficulty() {
+  function step() {
+    if (difficulty == null || difficulty == sliderValue) {
+      return false;
+    }
+    if (difficulty > sliderValue) {
+      if (!hideOne()) {
+        return false;
+      } else {
+        --difficulty;
+        updateGameView();
+      }
+    } else {
+      if (!unhideOne()) {
+        return false;
+      } else {
+        ++difficulty;
+        updateGameView();
+      }
+    }
+    setTimeout(step(), 10);
+    return true;
+  }
+  step();
 }
 
 window.onload = function() {
@@ -182,25 +220,18 @@ window.onload = function() {
     return false;
   });
 
-  $('#hide-one').click(function() {
-    try {
-      hideOne();
-    } catch(e) {
-      print('error=', e);
+  $("#slider").slider({
+    range: "min",
+    value: 81,
+    min: 20,
+    max: 81,
+    slide: function(ev, ui) {
+      $( "#slider-amount" ).html(ui.value);
+      sliderValue = ui.value;
+      changeDifficulty();
     }
-    updateGameView();
-    return false;
   });
-
-  $('#unhide-one').click(function() {
-    try {
-      unhideOne();
-    } catch(e) {
-      print('error=', e);
-    }
-    updateGameView();
-    return false;
-  });
+  $( "#slider-amount" ).html($('#slider').slider('value'));
 }
 
 cellId = function(x, y) { return 'cell-' + x + '-' + y }
@@ -256,4 +287,5 @@ function updateGameView() {
       }
     }
   }
+  $('#difficulty').html(difficulty);
 }

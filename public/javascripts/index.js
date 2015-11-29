@@ -1,12 +1,7 @@
 print = console.log.bind(console);
 
-hide = function(el) { el.css('display', 'none') }
-unhide = function(el) { el.css('display', 'inline-block') }
-setView = function(view) { // hide everything but view
-  hideView(myView);
-  myView = view;
-  unhideView(myView);
-}
+hide = function(el) { el.addClass('hidden') }
+unhide = function(el) { el.removeClass('hidden') }
 
 var socket;
 var playerInfo;
@@ -187,9 +182,13 @@ function updateGame(_gameInfo) {
 
   // gameObj: ar[9][9], ar[x][y] = {rank: , source: sourceObj}
   // sourceObj: -1 -> initially known, pid -> some pid
+  var completed = 0;
   for (var x = 0; x < 9; ++x) {
     for (var y = 0; y < 9; ++y) {
       var cellInfo = _gameInfo[x][y];
+      if (cellInfo.rank != 0) {
+        ++completed;
+      }
       var cell = $('#' + cellId(x, y));  
       if (gameInfo != null) {
         var old = gameInfo[x][y];
@@ -238,6 +237,12 @@ function updateGame(_gameInfo) {
         }
       }
     }
+  }
+
+  if (completed == 81) {
+    unhide($('#new-game'));
+  } else {
+    hide($('#new-game'));
   }
 
   gameInfo = _gameInfo;

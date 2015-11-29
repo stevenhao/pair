@@ -25,11 +25,23 @@
     <br><br>
     <div class="container">
       <div class="col-md-6">
-        <table id="game-view">
-        </table>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Game</h3>
+          </div>
+          <div class="panel-body">
+            <table id="game-view">
+            </table>
+            <p id="new-game" style="text-align:center">
+              <br>
+            <a target="generate" href="/generate">New Game</a>
+            </p>
+
+          </div>
+        </div>
       </div>
 
-      <div class="col-md-5">
+      <div class="col-md-6">
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Players</h3>
@@ -51,11 +63,11 @@
             </div>
             <form class="form-inline">
               <div class="form-group">
-                <input type="text" class="form-control" action="" id="username" placeholder="Username">
+                <input type="text" class="form-control" id="username" placeholder="Username">
                 <button type="submit" id="register" style="outline:none" class="btn btn-primary">Register!</button>
-                <button type="submit" id="rename" style="display:none;outline:none" class="btn btn-primary">Change Name</button>
+                <button type="submit" id="rename" style="outline:none" class="btn btn-primary hidden">Change Name</button>
+                <button type="submit" id="logout" style="outline:none" class="btn btn-primary hidden">Logout</button>
               </div>
-              <button type="submit" id="logout" style="display:none;outline:none" class="btn btn-primary">Logout</button>
 
             </form>
           </div>

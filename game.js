@@ -5,7 +5,7 @@ function Game() {
   var private;
   var public; // ar[9][9], ar[x][y] = {rank: , source: sourceObj}
 
-  var init = function(gameObj) {
+  function init(gameObj) {
     if (gameObj == null) {
       gameObj = engine.makeGame();
     } else {
@@ -43,12 +43,12 @@ function Game() {
       }
       private.push(rowL);
     }
-  },
+  }
 
-  guess = function(pid, guessObj) {
+  function guess(pid, guessObj) {
     var sq = guessObj.square, guess = guessObj.guess;
     var r = sq.row, c = sq.col;
-    validate = function() {
+    function validate() {
       if (public[r][c].rank != 0) {
         return 'already showing';
       }
@@ -58,7 +58,7 @@ function Game() {
       }
       return 'ok';
     }
-    action = function() {
+    function action() {
       if (private[r][c] != guess) {
         return 'incorrect';
       } else {

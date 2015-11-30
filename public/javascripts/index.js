@@ -137,8 +137,8 @@ function createGameView() {
       }
 
       tr.append(td.append(cell));
-      table.append(tr);
     }
+    table.append(tr);
   }
 }
 

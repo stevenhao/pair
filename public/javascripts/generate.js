@@ -180,7 +180,7 @@ function unhideOne() {
 }
 
 var difficulty = null;
-var sliderValue = 35;
+var sliderValue = 28;
 var running = false;
 
 function changeDifficulty() {

@@ -179,6 +179,10 @@ function Server() {
   function attach(app) {
     io = socketio(app);
     io.on('connection', function(socket) {
+      socket.on('error', function (err) {
+        console.error(err.stack); 
+      });
+      
       socket.on('conn', function(gid) {
         if (gid == null || !(gid in gameServers)) {
           gid = lastGid;

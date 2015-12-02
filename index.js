@@ -11,6 +11,10 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
+app.on('uncaughtException', function (err) {
+  console.error(err);
+  console.log("Node NOT Exiting...");
+});
 app.use(express.static(__dirname + '/public'));
 
 app.set('port', process.env.PORT || 3000);

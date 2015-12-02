@@ -198,7 +198,6 @@ function updateGame(_gameInfo) {
         var old = gameInfo[x][y];
         if (cellInfo.rank == 0) {
           if (giveNextFocus) {
-            print('giving focus to', {x:x, y:y});
             $('.cell-input', cell).focus();
             giveNextFocus = false;
           }
@@ -247,10 +246,12 @@ function updateGame(_gameInfo) {
             var el = $(this);
             var g = $('input', el).val();
             if (g.length != 1) {
+              $.jGrowl('Invalid guess');
               return false;
             }
             var guess = parseInt($('input', el).val());
             if (isNaN(guess)) {
+              $.jGrowl('Invalid guess');
               return false;
             }
             print('submitting guess=', guess);
@@ -271,7 +272,7 @@ function updateGame(_gameInfo) {
   if (completed == 81) {
     unhide($('#new-game'));
     if (giveNextFocus) {
-      $('#username').focus();
+      $('#dummy-input').focus();
     }
   } else {
     hide($('#new-game'));
@@ -283,7 +284,6 @@ function updateGame(_gameInfo) {
 
 window.onload = function() {
   myGid = $.url().param('gid');
-  print('myGid=', myGid);
   createGameView();
   socket = io();
   socket.emit('conn', myGid);
@@ -292,6 +292,7 @@ window.onload = function() {
   socket.on('register', register);
   socket.on('err', function(err) {
     print('error=', err);
+    $.jGrowl(err.reason);
   });
   socket.on('logout', function() {
     print('logout');
@@ -311,7 +312,6 @@ window.onload = function() {
   });
 
   $('#username').submit(function() {
-    print('username enter');
     return false;
   });
 
@@ -323,6 +323,7 @@ window.onload = function() {
     var username = $('#username').val();
     username = $.trim(username);
     if (username.length == 0) {
+      $.jGrowl('Name is empty');
       print('name is empty');
       return false;
     }
@@ -336,6 +337,7 @@ window.onload = function() {
     var username = $('#username').val();
     username = $.trim(username);
     if (username.length == 0) {
+      $.jGrowl('Name is empty');
       print('name is empty');
       return false;
     }

@@ -92,14 +92,14 @@ function GameServer() {
     function rename(username) {
       function validate() {
         if (pid == -1) {
-          return 'not registered';
+          return 'Not registered';
         }
         if (username.length == 0) {
-          return 'username is empty';
+          return 'Username is empty';
         }
         for(var userInfo of playerInfo) {
           if (userInfo.username == username) {
-            return 'username taken';
+            return 'Username taken';
           }
         }
         return 'ok';
@@ -119,7 +119,7 @@ function GameServer() {
         // probably shouldn't be guessing?
         socket.emit('err', {
           action: 'guess',
-          reason: 'not registered',
+          reason: 'Not registered',
         });
         return;
       }
@@ -188,7 +188,7 @@ function Server() {
           gameServers[gid].add(socket);
           socket.emit('conn');
         } else {
-          socket.emit('err', {action: 'conn', reason: 'gid does not exist'});
+          socket.emit('err', {action: 'conn', reason: 'No games in progress'});
         }
       });
     });

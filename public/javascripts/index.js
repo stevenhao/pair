@@ -15,8 +15,18 @@ var defaultColors = {
 }
 var myPid;
 var myGid;
-
+var startTime;
+var solved = false;
 var customColors = {};
+
+String.prototype.format = function() {
+    var formatted = this;
+    for (var i = 0; i < arguments.length; i++) {
+        var regexp = new RegExp('\\{'+i+'\\}', 'gi');
+        formatted = formatted.replace(regexp, arguments[i]);
+    }
+    return formatted;
+};
 
 function random(n) {
   return Math.floor(n*Math.random());
@@ -274,6 +284,7 @@ function updateGame(_gameInfo) {
     if (giveNextFocus) {
       $('#dummy-input').focus();
     }
+    solved = true;
   } else {
     hide($('#new-game'));
   }
@@ -281,6 +292,36 @@ function updateGame(_gameInfo) {
   gameInfo = _gameInfo;
 }
 
+function updateTimer() {
+  if (!solved) {
+    var el = $('#timer');
+    function pad(num, len) {
+      var s = '' + num;
+      while (s.length < len) {
+        s = '0' + s;
+      }
+      return s;
+    }
+    var curTime = new Date().getTime();
+    var elapsed = curTime - startTime;
+    var millis = pad(elapsed % 1000, 3); elapsed = (elapsed - millis) / 1000;
+    var secs = pad(elapsed % 60, 2); elapsed = (elapsed - secs) / 60;
+    var mins = pad(elapsed % 60, 2); elapsed = (elapsed - mins) / 60;
+    var hrs = pad(elapsed % 24, 2); elapsed = (elapsed - hrs) / 24;
+    var days = elapsed;
+
+    var time_str;
+    if (days != 0) {
+      time_str = "{0}:{1}:{2}:{3}".format(days, hrs, mins, secs, millis);
+    } else if (hrs != '00') {
+      time_str = "{1}:{2}:{3}".format(days, hrs, mins, secs, millis);
+    } else {
+      time_str = "{2}:{3}".format(days, hrs, mins, secs, millis);
+    }
+    el.val(time_str);
+    setTimeout(updateTimer, 1);
+  }
+}
 
 window.onload = function() {
   myGid = $.url().param('gid');
@@ -289,6 +330,9 @@ window.onload = function() {
   socket.emit('conn', myGid);
   socket.on('updatePlayers', updatePlayers);
   socket.on('updateGame', updateGame);
+  socket.on('updateTime', function(_startTime) {
+    startTime = _startTime;
+  });
   socket.on('register', register);
   socket.on('err', function(err) {
     print('error=', err);
@@ -305,6 +349,7 @@ window.onload = function() {
   socket.on('conn', function() {
     print('connected!');
     socket.emit('refresh');
+    updateTimer();
   });
   socket.on('guess', function(obj) {
     print('guess result:', obj);

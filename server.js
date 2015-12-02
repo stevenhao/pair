@@ -8,6 +8,7 @@ function randomGid() {
 
 function GameServer() {
   var game = Game(), playerInfo = [], clients = [];
+  var startTime = new Date().getTime();
 
   function Client() {
     var socket, pid = -1;
@@ -27,6 +28,7 @@ function GameServer() {
 
       socket.emit('updatePlayers', playerInfo);
       socket.emit('updateGame', game.getPublic());
+      socket.emit('updateTime', startTime);
     }
 
     function register(username) {
@@ -182,7 +184,7 @@ function Server() {
       socket.on('error', function (err) {
         console.error(err.stack); 
       });
-      
+
       socket.on('conn', function(gid) {
         if (gid == null || !(gid in gameServers)) {
           gid = lastGid;

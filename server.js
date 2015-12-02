@@ -134,6 +134,7 @@ function GameServer() {
         } else {
           playerInfo[pid].score -= 3;
         }
+        socket.emit('guess', {guessObj: guessObj, result: result.result});
       }
       updateAll();
     }

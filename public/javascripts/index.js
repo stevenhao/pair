@@ -10,15 +10,20 @@ var defaultColors = {
   0: 'red',
   1: 'blue',
   2: 'green',
-  3: 'yellow',
+  3: 'orange',
+  4: 'purple',
 }
 var myPid;
 var myGid;
 
 var customColors = {};
 
+function random(n) {
+  return Math.floor(n*Math.random());
+}
+
 function randomColor() {
-  return 'gray'; // trule random color generator
+  return 'gray'; // truly random color generator
 }
 
 function getColor(pid) { 
@@ -32,68 +37,48 @@ function getColor(pid) {
   return customColors[pid];
 }
 
-window.onload = function() {
-  myGid = $.url().param('gid');
-  print('myGid=', myGid);
-  createGameView();
-  socket = io();
-  socket.emit('conn', myGid);
-  socket.on('updatePlayers', updatePlayers);
-  socket.on('updateGame', updateGame);
-  socket.on('register', register);
-  socket.on('err', function(err) {
-    print('error=', err);
-  });
-  socket.on('logout', function() {
-    print('logout');
-    myPid = null;
-  });
-  socket.on('rename', function() {
-    // set name to username?
-  });
+cellId = function(x, y) { return 'cell-' + x + '-' + y }
 
-  socket.on('conn', function() {
-    print('connected!');
-    socket.emit('refresh');
-  });
+function animate(ev) {
+  var guessObj = ev.guessObj, result = ev.result;
+  // guessObj: {square}, result: "correct" or "incorrect"
+  var square = $('#' + cellId(guessObj.square.row, guessObj.square.col))
 
-  $('#username').submit(function() {
-    print('username enter');
-    return false;
-  });
+  var obj = $('<div>');
+  var color;
+  if (result == 'correct') {
+    obj.html("+1");
+    color = 'green';
+  } else {
+    obj.html("-3");
+    color = 'red';
+  }
 
-  $('#register').click(function() {
-    if ($('#register').hasClass('hidden')) {
-      $('#rename').click();
-      return false;
-    }
-    var username = $('#username').val();
-    username = $.trim(username);
-    if (username.length == 0) {
-      print('name is empty');
-      return false;
-    }
+  $('body').append(obj);
+  obj.css('font-size','20px');
+  obj.css('position','absolute');
+  obj.offset({
+    left: square.offset().left + square.width() / 2 - obj.width() / 2, 
+    top: square.offset().top + square.height() / 4,
+  });
+  obj.css({
+    'opacity': 100,
+    'color': color,
+    'text-shadow': '1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000',
+  });
+  obj.animate({
+    'opacity': 0,
+    'top': '-='+(100+random(100))+'px', 
+    'left': '-='+(random(200)-100)+'px',
+  }, 1000, 'swing', function() {
+    $(this).remove();
+  });
+}
 
-    socket.emit('register', username);
-    print('tried to register');
-    return false;
-  });
-  $('#rename').click(function() {
-    var username = $('#username').val();
-    username = $.trim(username);
-    if (username.length == 0) {
-      print('name is empty');
-      return false;
-    }
-    socket.emit('rename', username);
-    print('tried to rename');
-    return false;
-  });
-  $('#logout').click(function() {
-    socket.emit('logout');
-    print('tried to logout');
-    return false;
-  });
+function doGuess(guessObj) {
+  // guessObj: {square: {row: ., col: .}, guess};
+  // perhaps do some validation here
+  socket.emit('guess', guessObj);
 }
 
 function updateColors() {
@@ -104,8 +89,6 @@ function register(pid) {
   myPid = pid;
   updateColors();
 }
-
-cellId = function(x, y) { return 'cell-' + x + '-' + y }
 
 function createGameView() {
   function getStyle(row, col, dir) {
@@ -226,8 +209,13 @@ function updateGame(_gameInfo) {
         var prv = $('.cell-input', cell);
         print('prv =', prv);
         if (prv != null && prv.is(":focus")) {
-          // give next input focus.
-          giveNextFocus = true;
+          if (cellInfo.source == myPid) {
+            // give next input focus.
+            giveNextFocus = true;
+          } else {
+            // remove focus to avoid accidentally backspacing
+            $('#dummy-input').focus();
+          }
         }
         print('updating x=', x, 'y=', y, 'prev=', gameInfo[x][y], 'new=',cellInfo);
         cell.empty();
@@ -257,7 +245,14 @@ function updateGame(_gameInfo) {
           var form = $('<form>').addClass('cell-input').attr('x', x).attr('y', y);
           form.submit(function() {
             var el = $(this);
+            var g = $('input', el).val();
+            if (g.length != 1) {
+              return false;
+            }
             var guess = parseInt($('input', el).val());
+            if (isNaN(guess)) {
+              return false;
+            }
             print('submitting guess=', guess);
             var guessObj = {
               square: {row: el.attr('x'), col: el.attr('y')},
@@ -285,8 +280,74 @@ function updateGame(_gameInfo) {
   gameInfo = _gameInfo;
 }
 
-function doGuess(guessObj) {
-  // guessObj: {square: {row: ., col: .}, guess};
-  // perhaps do some validation here
-  socket.emit('guess', guessObj);
+
+window.onload = function() {
+  myGid = $.url().param('gid');
+  print('myGid=', myGid);
+  createGameView();
+  socket = io();
+  socket.emit('conn', myGid);
+  socket.on('updatePlayers', updatePlayers);
+  socket.on('updateGame', updateGame);
+  socket.on('register', register);
+  socket.on('err', function(err) {
+    print('error=', err);
+  });
+  socket.on('logout', function() {
+    print('logout');
+    myPid = null;
+  });
+  socket.on('rename', function() {
+    // set name to username?
+  });
+
+  socket.on('conn', function() {
+    print('connected!');
+    socket.emit('refresh');
+  });
+  socket.on('guess', function(obj) {
+    print('guess result:', obj);
+    animate(obj);
+  });
+
+  $('#username').submit(function() {
+    print('username enter');
+    return false;
+  });
+
+  $('#register').click(function() {
+    if ($('#register').hasClass('hidden')) {
+      $('#rename').click();
+      return false;
+    }
+    var username = $('#username').val();
+    username = $.trim(username);
+    if (username.length == 0) {
+      print('name is empty');
+      return false;
+    }
+
+    socket.emit('register', username);
+    print('tried to register');
+    return false;
+  });
+
+  $('#rename').click(function() {
+    var username = $('#username').val();
+    username = $.trim(username);
+    if (username.length == 0) {
+      print('name is empty');
+      return false;
+    }
+    socket.emit('rename', username);
+    print('tried to rename');
+    return false;
+  });
+
+  $('#logout').click(function() {
+    socket.emit('logout');
+    print('tried to logout');
+    return false;
+  });
 }
+

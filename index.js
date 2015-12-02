@@ -42,3 +42,4 @@ app.post('/sudoku', function(req, res) {
 });
 
 httpServer.listen(app.get('port'));
+print('http server listening on port '+ app.get('port'));

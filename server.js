@@ -142,8 +142,10 @@ function GameServer() {
     }
 
     function update() {
-      socket.emit('updatePlayers', playerInfo);
-      socket.emit('updateGame', game.getPublic());
+      if (socket.connected) {
+        socket.emit('updatePlayers', playerInfo);
+        socket.emit('updateGame', game.getPublic());
+      }
     }
 
     var self = {
@@ -154,9 +156,13 @@ function GameServer() {
   }
 
   function updateAll() {
-    print('updating all', {playerInfo: playerInfo});
-    for(var client of clients) {
-      client.update();
+    print('updating all', clients.length, {playerInfo: playerInfo});
+    for(var idx = clients.length; --idx >= 0;) {
+      if (clients[idx].connected) {
+        clients[idx].update();
+      } else {
+        clients.splice(idx, 1);
+      }
     }
   }
 

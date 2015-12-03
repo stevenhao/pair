@@ -15,7 +15,7 @@ var defaultColors = {
 }
 var myPid;
 var myGid;
-var startTime;
+var startTime = null;
 var solved = false;
 var customColors = {};
 
@@ -331,7 +331,10 @@ window.onload = function() {
   socket.on('updatePlayers', updatePlayers);
   socket.on('updateGame', updateGame);
   socket.on('updateTime', function(_startTime) {
-    startTime = _startTime;
+    if (startTime == null) {
+      startTime = _startTime;
+      updateTimer();
+    }
   });
   socket.on('register', register);
   socket.on('err', function(err) {
@@ -349,8 +352,8 @@ window.onload = function() {
   socket.on('conn', function() {
     print('connected!');
     socket.emit('refresh');
-    updateTimer();
   });
+
   socket.on('guess', function(obj) {
     print('guess result:', obj);
     animate(obj);

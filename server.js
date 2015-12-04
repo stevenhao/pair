@@ -151,6 +151,7 @@ function GameServer() {
     var self = {
       attach: function(socket) { attach(socket) },
       update: function() { update() },
+      isConnected: function() { return socket.connected; },
     }
     return self;
   }
@@ -158,7 +159,7 @@ function GameServer() {
   function updateAll() {
     print('updating all', clients.length, {playerInfo: playerInfo});
     for(var idx = clients.length; --idx >= 0;) {
-      if (clients[idx].connected) {
+      if (clients[idx].isConnected()) {
         clients[idx].update();
       } else {
         clients.splice(idx, 1);

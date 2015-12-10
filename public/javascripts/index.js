@@ -272,7 +272,7 @@ function updateGame(_gameInfo) {
             doGuess(guessObj);
             return false;
           });
-          var el = $('<input>').addClass('cell-input').attr('type', 'number');
+          var el = $('<input>').addClass('cell-input').attr('type', 'text').attr('pattern', '\\d*');
           cell.append(form.append(el));
         }
       }

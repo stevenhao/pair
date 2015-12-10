@@ -2,6 +2,12 @@ body{
   font:14px "Lucida Grande" sans-serif;
 }
 
+input[type='text'],
+input[type='number'],
+textarea {
+  font-size: 16px;
+}
+
 .hidden {
   display: none;
 }
@@ -64,3 +70,4 @@ body{
 .offline{
   font-style:italic;
 }
+

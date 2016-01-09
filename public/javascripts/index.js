@@ -85,6 +85,11 @@ function animate(ev) {
   });
 }
 
+var delay = 80;
+function guessAll() {
+  $('.cell-form').submit();
+}
+
 function doGuess(guessObj) {
   // guessObj: {square: {row: ., col: .}, guess};
   // perhaps do some validation here
@@ -251,23 +256,28 @@ function updateGame(_gameInfo) {
           el.append(cellInfo.rank);
           cell.append(el);
         } else {
-          var form = $('<form>').addClass('cell-input').attr('x', x).attr('y', y);
-          form.submit(function() {
+          var form = $('<form>').addClass('cell-form').attr('x', x).attr('y', y);
+          form.submit(function(quiet) {
             var el = $(this);
             var g = $('input', el).val();
             if (g.length != 1) {
-              $.jGrowl('Invalid guess');
+              if (!quiet) {
+                $.jGrowl('Invalid guess');
+              }
               return false;
             }
             var guess = parseInt($('input', el).val());
             if (isNaN(guess)) {
-              $.jGrowl('Invalid guess');
+              if (!quiet) {
+                $.jGrowl('Invalid guess');
+              }
               return false;
             }
             print('submitting guess=', guess);
             var guessObj = {
               square: {row: el.attr('x'), col: el.attr('y')},
               guess: guess,
+              quiet: quiet,
             };
             doGuess(guessObj);
             return false;
@@ -280,12 +290,14 @@ function updateGame(_gameInfo) {
   }
 
   if (completed == 81) {
+    hide($('#guess-all'));
     unhide($('#new-game'));
     if (giveNextFocus) {
       $('#dummy-input').focus();
     }
     solved = true;
   } else {
+    unhide($('#guess-all'));
     hide($('#new-game'));
   }
 
@@ -339,7 +351,9 @@ window.onload = function() {
   socket.on('register', register);
   socket.on('err', function(err) {
     print('error=', err);
-    $.jGrowl(err.reason);
+    if (!err.quiet) {
+      $.jGrowl(err.reason);
+    }
   });
   socket.on('logout', function() {
     print('logout');
@@ -392,6 +406,10 @@ window.onload = function() {
     socket.emit('rename', username);
     print('tried to rename');
     return false;
+  });
+
+  $('#guess-all').click(function() {
+    guessAll();
   });
 
   $('#logout').click(function() {
